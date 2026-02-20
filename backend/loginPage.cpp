@@ -1,33 +1,14 @@
-#include<iostream>
-#include"student/student.hpp"
-#include"librarian/librarian.hpp"
-#include<memory>
+#include"loginPage.hpp"
 
-using namespace std;
-
-class homepage {
-
-   
-    private:
-        void display(int choice);
+loginpage::loginpage(int choice)
+    {
+        display(choice);
+    }
 
 
-        unique_ptr<student> student_user;
-        unique_ptr<librarian> librarian_user;
-
-    public:
-
-        homepage(int choice)
-        {
-            display(choice);
-        }
-
-
-};
-
-void homepage::display(int choice)
+void loginpage::display(int choice)
 {
-    while(true)
+    //while(true)
     {
         switch(choice) 
         {
