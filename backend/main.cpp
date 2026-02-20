@@ -1,5 +1,6 @@
 #include<iostream>
-#include"homepage.cpp"
+#include"loginPage.hpp"
+#include"../database/database.hpp"
 
 using namespace std;
 
@@ -17,12 +18,10 @@ int main() {
     cout<<"please enter if you want to continue as \n 1. Student \n 2. Librarian \n 3. New User \n  4. Exit \n"<<endl;
     int choice;
     cin>>choice;
-    unique_ptr<homepage> home = make_unique<homepage>(choice);
     
-    
+    unique_ptr<loginpage> login = make_unique<loginpage>(choice);
 
- 
-    
+    database db("libmang"); // Replace with your actual database name
     
     
     return 0;

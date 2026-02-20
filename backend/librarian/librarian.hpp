@@ -1,4 +1,4 @@
-#include "user.hpp"
+#include "../user.hpp"
 
 class librarian : public user {   
 
@@ -8,7 +8,23 @@ class librarian : public user {
             void set_password(string password) override;
 
 
+        int employee_number;
+        string name;
+        string email;
+        int joining_year;
+
     public:
-        
-            
+            //Convert to optional
+        void checkBookAvailability();
+        void addBook();
+        void removeBook();
+        void updateBookInfo();
+        void viewBorrowingRecords();
+        void manageMembers();
+        void generateReports();
+        void updateStudentProfile(); // balance update also
+        void searchBooks();
+
+
+
 };
