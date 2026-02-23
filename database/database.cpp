@@ -2,7 +2,7 @@
 
 database::database(const std::string& dbPath) {
 
-    dbConfigInit();
+    dbConfigInit(dbPath);
     conn = mysql_init(nullptr);
     if (conn == nullptr) {
         cerr << "MySQL initialization failed" << endl;
@@ -24,7 +24,7 @@ database::database(const std::string& dbPath) {
 
     cout<<"Connected to database successfully!"<<endl;
     std::cout << mysql_error(conn) << std::endl;
-    print_databases(conn);
+    //print_databases(conn);
 }
 
 database::~database() {
@@ -32,12 +32,12 @@ database::~database() {
     cout<<"Database connection closed."<<endl;
 }
 
-void database::dbConfigInit() {
+void database::dbConfigInit(const std::string& dbPath) {
     // Code for connecting to the database can be added here
     config.host = "localhost";
     config.user = "appuser";       
     config.password = "StrongPass123!"; // Replace with your actual password
-    config.database = "test"; // Replace with your actual database name
+    config.database = dbPath.c_str(); // Replace with your actual database name
     config.port = 3306; // Default MySQL port
 
 }
@@ -55,30 +55,145 @@ void database::update_user(const user& user) {
     // Code for updating user information in the database can be added here
 }
 
-void database::print_databases(MYSQL* conn)
+vector<vector<string>> database::printResult()
 {
-    if (mysql_query(conn, "SHOW DATABASES;"))
-    {
-        std::cerr << "Query failed: "
-                  << mysql_error(conn) << std::endl;
-        return;
-    }
+    vector<vector<string>> result;
+    MYSQL_RES* res = mysql_store_result(conn);
 
-    MYSQL_RES* result = mysql_store_result(conn);
-
-    if (result == nullptr)
+    if (res == nullptr)
     {
         std::cerr << "Store result failed: "
                   << mysql_error(conn) << std::endl;
-        return;
+        return result;
     }
-
+    int num_fields = mysql_num_fields(res);
     MYSQL_ROW row;
 
-    while ((row = mysql_fetch_row(result)))
+    while ((row = mysql_fetch_row(res)))
     {
-        std::cout << row[0] << std::endl;
+        vector<string> row_data;
+        for (int i = 0; i < num_fields; ++i) {
+            row_data.push_back(row[i] ? row[i] : "NULL");
+        }
+        result.push_back(row_data);
     }
 
-    mysql_free_result(result);
+    mysql_free_result(res);
+    return result;
+}
+
+
+status database::studentCheck(std::string email,
+                              std::string password)
+{
+    const char* query =
+        "SELECT sc.password "
+        "FROM student s "
+        "JOIN student_login sc "
+        "ON s.id = sc.student_id "
+        "WHERE s.email = ?";
+
+    MYSQL_STMT* stmt = mysql_stmt_init(conn);
+    if (!stmt) {
+        std::cerr << "Statement init failed\n";
+        return status::failure;
+    }
+
+    if (mysql_stmt_prepare(stmt, query, strlen(query))) {
+        std::cerr << "Prepare failed: "
+                  << mysql_stmt_error(stmt) << std::endl;
+        mysql_stmt_close(stmt);
+        return status::failure;
+    }
+
+    // Bind email parameter
+    MYSQL_BIND param[1];
+    memset(param, 0, sizeof(param));
+
+    param[0].buffer_type = MYSQL_TYPE_STRING;
+    param[0].buffer = (char*)email.c_str();
+    param[0].buffer_length = email.length();
+
+    if (mysql_stmt_bind_param(stmt, param)) {
+        std::cerr << "Bind param failed: "
+                  << mysql_stmt_error(stmt) << std::endl;
+        mysql_stmt_close(stmt);
+        return status::failure;
+    }
+
+    if (mysql_stmt_execute(stmt)) {
+        std::cerr << "Execute failed: "
+                  << mysql_stmt_error(stmt) << std::endl;
+        mysql_stmt_close(stmt);
+        return status::failure;
+    }
+
+    // Prepare result binding
+    char stored_password[256];
+    unsigned long length;
+
+    MYSQL_BIND result[1];
+    memset(result, 0, sizeof(result));
+
+    result[0].buffer_type = MYSQL_TYPE_STRING;
+    result[0].buffer = stored_password;
+    result[0].buffer_length = sizeof(stored_password);
+    result[0].length = &length;
+
+    if (mysql_stmt_bind_result(stmt, result)) {
+        std::cerr << "Bind result failed: "
+                  << mysql_stmt_error(stmt) << std::endl;
+        mysql_stmt_close(stmt);
+        return status::failure;
+    }
+
+    mysql_stmt_store_result(stmt);
+
+    if (mysql_stmt_fetch(stmt) != 0) {
+        // No student found
+        mysql_stmt_close(stmt);
+        return status::failure;
+    }
+
+    stored_password[length] = '\0';
+    mysql_stmt_free_result(stmt);
+    mysql_stmt_close(stmt);
+
+    // Compare passwords
+    if (verifyPassword(password, stored_password)) {
+        printResult();
+        return status::success;
+        
+    }
+
+    //mysql_free_result(res);
+    printResult();
+    return status::failure;
+}
+
+bool database::verifyPassword(const std::string& input,
+                    const std::string& stored)
+{
+    return input == stored;  // Replace later with hash comparison
+}
+
+status database::execute(const string& query) {
+    // Code for executing a SQL query can be added here
+    if (mysql_query(conn, query.c_str())) {
+        std::cerr << "Query failed: "
+                  << mysql_error(conn) << std::endl;
+        return status::failure;
+    }
+    return status::success; // Return success or failure based on the execution result
+}
+
+vector<vector<string>> database::query(const string& query) {
+
+    std::vector<std::vector<std::string>> result;
+
+    if (mysql_query(conn, query.c_str())) {
+        throw std::runtime_error(mysql_error(conn));
+    }
+    result = printResult();
+    return result; // Return the fetched results as a vector of vectors of strings
 }

@@ -1,5 +1,7 @@
 #include "../user.hpp"
 
+#pragma once
+
 class librarian : public user {   
 
     private:
@@ -24,7 +26,12 @@ class librarian : public user {
         void generateReports();
         void updateStudentProfile(); // balance update also
         void searchBooks();
-
-
+        optional<string> get_name() override { return name!= "" ? optional<string>(name) : nullopt;  }
+        optional<string> get_email() override { return email!= "" ? optional<string>(email) : nullopt; }
+        optional<string> get_password() override { return password!= "" ? optional<string>(password) : nullopt; }
+        int get_employee_number();
+        int get_joining_year();
+        librarian(user& other) : user(other) {}
+        librarian() = default;  
 
 };

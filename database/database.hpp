@@ -2,8 +2,12 @@
 #include<string>
 #include "../backend/user.hpp"
 #include<iostream>
+#include"utility.hpp"
 #include<string>
+#include<cstring>
+#include<vector>
 
+#pragma once
 
 using namespace std;
 
@@ -22,12 +26,15 @@ class database{
         int create_user(const user& user);
         void delete_user(const user& user);
         void update_user(const user& user);
-        void dbConfigInit();
-        void print_databases(MYSQL* conn);
-
+        void dbConfigInit(const std::string& dbPath);
+        vector<vector<string>> printResult();
+    status execute(const string& query);
+    vector<vector<string>> query(const string& query);
+    bool verifyPassword(const std::string& input,const std::string& stored);
 
     public:
      database(const std::string& dbPath);
+    status studentCheck(string email, string password);
     ~database();
 
 

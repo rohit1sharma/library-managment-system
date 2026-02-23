@@ -1,8 +1,9 @@
 #include"loginPage.hpp"
 
-loginpage::loginpage(int choice)
+loginpage::loginpage()
     {
-        display(choice);
+        cin>>user_choice;
+        display(user_choice);
     }
 
 
@@ -14,12 +15,9 @@ void loginpage::display(int choice)
         {
         case 1:
             cout<<"You have chosen to continue as a Student."<<endl;
-            student_user = make_unique<student>();
-
             break;
         case 2:
             cout<<"You have chosen to continue as a Librarian."<<endl;
-            librarian_user = make_unique<librarian>();
             break;
         case 3:
             cout<<"You have chosen to register as a New User."<<endl;
@@ -32,4 +30,15 @@ void loginpage::display(int choice)
             cout<<"Invalid choice. Please enter 1 for Student, 2 for Librarian, or 3 for New User."<<endl;
         }
     }
+}
+
+unique_ptr<student> loginpage::get_student_user() {
+    return move(student_user);
+}
+unique_ptr<librarian> loginpage::get_librarian_user() {
+    return move(librarian_user);
+}
+
+int loginpage::getUserChoice() {
+    return user_choice;
 }
