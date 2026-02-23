@@ -83,15 +83,29 @@ vector<vector<string>> database::printResult()
 }
 
 
-status database::studentCheck(std::string email,
-                              std::string password)
+status database::userCheck(std::string email,std::string password,user_type type)
 {
-    const char* query =
-        "SELECT sc.password "
-        "FROM student s "
-        "JOIN student_login sc "
-        "ON s.id = sc.student_id "
-        "WHERE s.email = ?";
+    const char* query = nullptr;
+
+    if (type == user_type::student) {
+        query =
+            "SELECT sc.password "
+            "FROM student s "
+            "JOIN student_login sc "
+            "ON s.id = sc.student_id "
+            "WHERE s.email = ?";
+    }
+    else if (type == user_type::librarian) {
+        query =
+            "SELECT llog.password "
+            "FROM librarian lib "
+            "JOIN librarian_login llog "
+            "ON lib.id = llog.librarian_id "
+            "WHERE lib.email = ?";
+    }
+    else {
+        return status::failure;
+    }
 
     MYSQL_STMT* stmt = mysql_stmt_init(conn);
     if (!stmt) {
@@ -106,12 +120,14 @@ status database::studentCheck(std::string email,
         return status::failure;
     }
 
-    // Bind email parameter
+    // --------------------
+    // Bind input parameter
+    // --------------------
     MYSQL_BIND param[1];
     memset(param, 0, sizeof(param));
 
     param[0].buffer_type = MYSQL_TYPE_STRING;
-    param[0].buffer = (char*)email.c_str();
+    param[0].buffer = (void*)email.c_str();
     param[0].buffer_length = email.length();
 
     if (mysql_stmt_bind_param(stmt, param)) {
@@ -128,9 +144,12 @@ status database::studentCheck(std::string email,
         return status::failure;
     }
 
-    // Prepare result binding
+    // --------------------
+    // Bind result
+    // --------------------
     char stored_password[256];
-    unsigned long length;
+    unsigned long length = 0;
+    bool is_null = 0;
 
     MYSQL_BIND result[1];
     memset(result, 0, sizeof(result));
@@ -139,6 +158,7 @@ status database::studentCheck(std::string email,
     result[0].buffer = stored_password;
     result[0].buffer_length = sizeof(stored_password);
     result[0].length = &length;
+    result[0].is_null = &is_null;
 
     if (mysql_stmt_bind_result(stmt, result)) {
         std::cerr << "Bind result failed: "
@@ -147,26 +167,38 @@ status database::studentCheck(std::string email,
         return status::failure;
     }
 
-    mysql_stmt_store_result(stmt);
-
-    if (mysql_stmt_fetch(stmt) != 0) {
-        // No student found
+    if (mysql_stmt_store_result(stmt)) {
+        std::cerr << "Store result failed: "
+                  << mysql_stmt_error(stmt) << std::endl;
         mysql_stmt_close(stmt);
         return status::failure;
     }
 
+    int fetch_status = mysql_stmt_fetch(stmt);
+
+    if (fetch_status == MYSQL_NO_DATA || is_null) {
+        mysql_stmt_free_result(stmt);
+        mysql_stmt_close(stmt);
+        return status::failure;
+    }
+
+    // Ensure null termination safely
+    if (length >= sizeof(stored_password))
+        length = sizeof(stored_password) - 1;
+
     stored_password[length] = '\0';
+
     mysql_stmt_free_result(stmt);
     mysql_stmt_close(stmt);
 
-    // Compare passwords
+    // --------------------
+    // Compare password
+    // --------------------
     if (verifyPassword(password, stored_password)) {
         printResult();
         return status::success;
-        
     }
 
-    //mysql_free_result(res);
     printResult();
     return status::failure;
 }
@@ -177,7 +209,7 @@ bool database::verifyPassword(const std::string& input,
     return input == stored;  // Replace later with hash comparison
 }
 
-status database::execute(const string& query) {
+status database::execute(const string& query) { 
     // Code for executing a SQL query can be added here
     if (mysql_query(conn, query.c_str())) {
         std::cerr << "Query failed: "

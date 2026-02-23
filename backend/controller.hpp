@@ -13,19 +13,21 @@ using namespace std;
 
 class controller {
     private:
-        unique_ptr<loginpage> login;
-        unique_ptr<database> db;
-        unique_ptr<user> student_user;
-        unique_ptr<user> librarian_user;
+        shared_ptr<loginpage> login;
+        shared_ptr<database> db;
+        shared_ptr<user> student_user;
+        shared_ptr<user> librarian_user;
+        user_type current_user_type;
 
     public:
         controller();
-        void studentlogin();
+        status userlogin(user_type type);
         void librarianlogin();
-        void setUserEmail(string email);
-        optional<string> getUserEmail();
-        void setUserPassword(string password);
-        optional<string> getUserPassword();
+        status isStudentLoggedIn();
+        status isLibrarianLoggedIn();
+        status initstudentSession();
+        status initlibrarianSession();
+        status getuserDetails();
 
         ~controller();
 

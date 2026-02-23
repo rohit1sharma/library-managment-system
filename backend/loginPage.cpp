@@ -42,3 +42,76 @@ unique_ptr<librarian> loginpage::get_librarian_user() {
 int loginpage::getUserChoice() {
     return user_choice;
 }
+
+status loginpage::userlogin(shared_ptr<database> db, user_type type)
+{
+    // Code for user login can be added here
+    cout << "please enter email and password to login" << endl;
+    if (student_user || librarian_user)
+    {
+        string email, password;
+        cin >> email;
+        cin >> password;
+        if (db->userCheck(email,password,type) == status::success)
+        {
+            cout << "Login successful!" << endl;
+            return status::success;
+            // Proceed with student functionalities
+        }
+    }
+    else
+    {
+        cout << "Login failed. Please check your email and password." << endl;
+        return status::failure;
+    }
+}
+
+// void loginpage::setUserEmail(string email)
+// {
+//     if (student_user)
+//     {
+//         student_user->set_email(email);
+//     }
+//     else if (librarian_user)
+//     {
+//         librarian_user->set_email(email);
+//     }
+// }
+
+// void loginpage::setUserPassword(string password)
+// {
+//     if (student_user)
+//     {
+//         student_user->set_password(password);
+//     }
+//     else if (librarian_user)
+//     {
+//         librarian_user->set_password(password);
+//     }
+// }
+
+// optional<string> loginpage::getUserEmail()
+// {
+//     if (student_user)
+//     {
+//         return student_user->get_email();
+//     }
+//     else if (librarian_user)
+//     {
+//         return librarian_user->get_email();
+//     }
+//     return nullopt;
+// }
+
+// optional<string> loginpage::getUserPassword()
+// {
+//     if (student_user)
+//     {
+//         return student_user->get_password();
+//     }
+//     else if (librarian_user)
+//     {
+//         return librarian_user->get_password();
+//     }
+//     return nullopt;
+// }

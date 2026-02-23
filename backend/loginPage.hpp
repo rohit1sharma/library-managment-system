@@ -3,6 +3,8 @@
 #include"librarian/librarian.hpp"
 #include"user.hpp"
 #include<memory>
+#include"utility.hpp"
+#include"../database/database.hpp"
 
 #pragma once
 
@@ -22,6 +24,11 @@ class loginpage {
         unique_ptr<student> get_student_user();
         unique_ptr<librarian> get_librarian_user();
         int getUserChoice();
+        status userlogin(shared_ptr<database> db, user_type type);
+        // void setUserEmail(string email);
+        // optional<string> getUserEmail();
+        // void setUserPassword(string password);
+        // optional<string> getUserPassword();
 
 };
 
