@@ -49,10 +49,9 @@ status loginpage::userlogin(shared_ptr<database> db, user_type type)
     cout << "please enter email and password to login" << endl;
     if (student_user || librarian_user)
     {
-        string email, password;
-        cin >> email;
-        cin >> password;
-        if (db->userCheck(email,password,type) == status::success)
+        cin >> user_credentials.email;
+        cin >> user_credentials.password;
+        if (db->userCheck(user_credentials.email,user_credentials.password,type) == status::success)
         {
             cout << "Login successful!" << endl;
             return status::success;
@@ -64,6 +63,10 @@ status loginpage::userlogin(shared_ptr<database> db, user_type type)
         cout << "Login failed. Please check your email and password." << endl;
         return status::failure;
     }
+}
+
+login_credentials loginpage::get_user_credentials() {
+    return user_credentials;
 }
 
 // void loginpage::setUserEmail(string email)

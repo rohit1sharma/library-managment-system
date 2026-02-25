@@ -5,19 +5,13 @@ controller::controller()
     login = make_shared<loginpage>();
     db = make_shared<database>("libmang");
 
-    // if (login->get_student_user()) {
-    //     student_user = make_unique<student>(move(*login->get_student_user()));
-    // }
-    // else if (login->get_librarian_user()) {
-    //     librarian_user = make_unique<librarian>(move(*login->get_librarian_user()));
-    // }
-
     switch (login->getUserChoice())
     {
     case 1:
         cout << "You have chosen to continue as a Student." << endl;
         current_user_type = user_type::student;
-        student_user = make_shared<student>();
+        user_credentials = login->get_user_credentials();
+        student_user = make_shared<student>(user_credentials.email, user_credentials.password);
         if (userlogin(current_user_type) == status::success)
         {
             initstudentSession();
@@ -27,7 +21,12 @@ controller::controller()
     case 2:
         cout << "You have chosen to continue as a Librarian." << endl;
         current_user_type = user_type::librarian;
-        librarian_user = make_shared<librarian>();
+        user_credentials = login->get_user_credentials();
+        librarian_user = make_shared<librarian>(user_credentials.email, user_credentials.password);
+        if(userlogin(current_user_type) == status::success)
+        {
+            initlibrarianSession();
+        }
         break;
 
     default:
@@ -68,6 +67,7 @@ status controller::initstudentSession()
 {
     // Code for initializing student session can be added here
 
+
     return status::success;
 }
 
@@ -94,12 +94,22 @@ status controller::isLibrarianLoggedIn()
 
 status controller::getuserDetails()
 {
-    // Code for getting user details can be added here
+    try
+    {
     if (current_user_type == user_type::student)
     {
-        
+       db->getUserDetails(student_user);
     }
-
+    else if (current_user_type == user_type::librarian)
+    {
+        db->getUserDetails(librarian_user);
+    }
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return status::failure;
+    }
     return status::success;
 }
 

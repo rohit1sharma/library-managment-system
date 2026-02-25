@@ -15,9 +15,10 @@ class loginpage {
    
     private:
     int user_choice;
-        void display(int choice);
-            unique_ptr<student> student_user;
-            unique_ptr<librarian> librarian_user;
+    void display(int choice);
+    unique_ptr<student> student_user;
+    unique_ptr<librarian> librarian_user;
+    login_credentials user_credentials;
 
     public:
         loginpage();
@@ -25,6 +26,7 @@ class loginpage {
         unique_ptr<librarian> get_librarian_user();
         int getUserChoice();
         status userlogin(shared_ptr<database> db, user_type type);
+        login_credentials get_user_credentials();
         // void setUserEmail(string email);
         // optional<string> getUserEmail();
         // void setUserPassword(string password);

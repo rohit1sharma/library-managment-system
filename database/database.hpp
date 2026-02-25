@@ -6,18 +6,13 @@
 #include<string>
 #include<cstring>
 #include<vector>
+#include<memory>
 
 #pragma once
 
 using namespace std;
 
-struct db_config {
-    string host;
-    string user;
-    string password;
-    string database;
-    int port;
-};
+
 
 class database{
     private:
@@ -26,16 +21,18 @@ class database{
     int create_user(const user& user);
     void delete_user(const user& user);
     void update_user(const user& user);
+
     void dbConfigInit(const std::string& dbPath);
     vector<vector<string>> printResult();
     status execute(const string& query);
-    vector<vector<string>> query(const string& query);
+    
     bool verifyPassword(const std::string& input,const std::string& stored);
 
     public:
-     database(const std::string& dbPath);
+    database(const std::string& dbPath);
     status userCheck(string email, string password, user_type type);
     ~database();
-
+    vector<vector<string>> query(const string& query);
+    status getUserDetails(const shared_ptr<user>& user);
 
 };

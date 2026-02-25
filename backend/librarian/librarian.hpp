@@ -33,5 +33,6 @@ class librarian : public user {
         int get_joining_year();
         librarian(user& other) : user(other) {}
         librarian() = default;  
+        librarian(string email, string password) : user("", email, password) {}
 
 };

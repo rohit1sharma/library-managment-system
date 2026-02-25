@@ -18,6 +18,7 @@ class controller {
         shared_ptr<user> student_user;
         shared_ptr<user> librarian_user;
         user_type current_user_type;
+        login_credentials user_credentials;
 
     public:
         controller();

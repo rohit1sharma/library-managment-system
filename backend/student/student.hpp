@@ -27,6 +27,7 @@ public:
     int get_balance();
     student(user& other) : user(other) {}
     student()=  default;
+    student(string email, string password) : user("", email, password) {}
 
 protected:
     void borrow_book();
